@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конфигуратор ПК</title>
+    <link rel="stylesheet" href="{% static 'hello/css/style.css' %}">
+</head>
+<body>
+    <div class="configurator">
+        <h1>Конфигуратор ПК</h1>
+        
+        <div class="budget-selector">
+            <label for="budget">Ваш бюджет (руб):</label>
+            <input type="range" id="budget" min="20000" max="300000" step="5000" value="70000">
+            <span id="budget-value">70 000 руб</span>
+        </div>
+        
+        <div class="filters">
+            <label>Основное назначение:</label>
+            <select id="purpose">
+                <option value="office">Офисный ПК</option>
+                <option value="gaming" selected>Игровой ПК</option>
+                <option value="workstation">Рабочая станция</option>
+                <option value="home">Домашний мультимедиа</option>
+            </select>
+            
+            <label>Приоритет:</label>
+            <select id="priority">
+                <option value="balanced">Сбалансированная сборка</option>
+                <option value="cpu">Процессор</option>
+                <option value="gpu" selected>Видеокарта</option>
+                <option value="storage">Память и накопители</option>
+            </select>
+        </div>
+        
+        <button id="generate-btn" class="generate-button">Подобрать сборку</button>
+    </div>
+
+    <div class="results" id="results">
+        <!-- Результаты будут здесь -->
+    </div>
+
+    <script src="{% static 'hello/js/script.js'%}"></script>
+</body>
+</html>
