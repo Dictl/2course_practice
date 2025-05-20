@@ -17,7 +17,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
-from hello import views
 from rest_framework.routers import DefaultRouter
 from .views import *
 
@@ -39,5 +38,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('hello.urls')),  # Подключаем URL вашего приложения
     path('api/', include(router.urls)),
-    path("admin/", admin.site.urls)
 ]

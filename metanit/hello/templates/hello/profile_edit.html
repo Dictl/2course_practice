@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Редактировать профиль</title>
+    <link rel="stylesheet" href="{% static 'hello/css/style.css' %}">
+    <style>
+        body {
+            background: #fff url("data:image/svg+xml;utf8,<svg width='40' height='40' xmlns='http://www.w3.org/2000/svg'><text x='0' y='30' font-size='30'>👻</text></svg>") repeat;
+        }
+        .profile-edit-container {
+            max-width: 400px;
+            margin: 80px auto;
+            background: #0066cc;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 36px 32px 28px 32px;
+            color: #fff;
+            text-align: center;
+        }
+        .profile-edit-container h2 { margin-bottom: 24px; }
+        .profile-edit-container form { display: flex; flex-direction: column; gap: 18px; }
+        .profile-edit-container input { padding: 10px 12px; border-radius: 6px; border: none; font-size: 16px; }
+        .profile-edit-container button { background: #fff; color: #0066cc; font-weight: bold; border: none; border-radius: 6px; padding: 10px 0; margin-top: 10px; cursor: pointer; }
+        .profile-edit-container button:hover { background: #e0eaff; }
+        .password-section { margin-top: 32px; background: #005bb5; border-radius: 8px; padding: 18px 12px; }
+        .confirm-row { margin: 10px 0; }
+    </style>
+</head>
+<body>
+<div class="profile-edit-container">
+    <h2>Редактировать профиль</h2>
+    {% if messages %}
+      {% for message in messages %}
+        <div style="color: #ffd6d6;">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+            {{ field.label_tag }}<br>
+            {{ field.errors }}
+            {{ field }}<br>
+        {% endfor %}
+        <button type="submit">Сохранить профиль</button>
+    </form>
+    <div class="password-section">
+        <form method="post">
+            {% csrf_token %}
+            {{ pwd_form.non_field_errors }}
+            {% for field in pwd_form %}
+                {{ field.label_tag }}<br>
+                {{ field.errors }}
+                {{ field }}<br>
+            {% endfor %}
+            <div class="confirm-row">
+                <label>
+                    <input type="checkbox" name="confirm_change" value="yes" required>
+                    Я уверен, что хочу изменить пароль
+                </label>
+            </div>
+            <button type="submit" name="change_password" value="1">Изменить пароль</button>
+        </form>
+    </div>
+    <div style="margin-top:18px; display: flex; flex-direction: column; gap: 10px;">
+        <a href="{% url 'index' %}" style="color:#cce3ff;">Назад</a>
+        <a href="{% url 'delete_account' %}" style="background:#ffd6d6; color:#b30000; border:none; border-radius:6px; padding:10px 0; width:100%; margin-top:10px; cursor:pointer; text-align:center; text-decoration:none;">
+            Удалить аккаунт
+        </a>
+        <a href="{% url 'logout' %}" style="color:#ffd6d6; margin-top:10px;">Выйти</a>
+    </div>
+</div>
+</body>
+</html>

@@ -8,15 +8,49 @@
     <link rel="stylesheet" href="{% static 'hello/css/style.css' %}">
 </head>
 <body>
+    <div class="profile-bar">
+        {% if user.is_authenticated %}
+            <a href="{% url 'profile_edit' %}" style="text-decoration:none;">
+  <span class="profile-username">👻 {{ user.first_name }}</span>
+</a>
+            <a href="{% url 'logout' %}" class="profile-logout">Выйти</a>
+        {% endif %}
+    </div>
+    <style>
+    .profile-bar {
+        position: fixed;
+        top: 18px;
+        right: 32px;
+        background: #0066cc;
+        color: #fff;
+        padding: 10px 22px;
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        z-index: 100;
+        font-size: 16px;
+    }
+    .profile-bar .profile-logout {
+        color: #ffd6d6;
+        text-decoration: underline;
+        font-size: 15px;
+    }
+    .profile-bar .profile-logout:hover {
+        color: #fff;
+    }
+    </style>
+
     <div class="configurator">
         <h1>Конфигуратор ПК</h1>
-        
+
         <div class="budget-selector">
             <label for="budget">Ваш бюджет (руб):</label>
             <input type="range" id="budget" min="20000" max="300000" step="5000" value="70000">
             <span id="budget-value">70 000 руб</span>
         </div>
-        
+
         <div class="filters">
             <label>Основное назначение:</label>
             <select id="purpose">
@@ -25,7 +59,7 @@
                 <option value="workstation">Рабочая станция</option>
                 <option value="home">Домашний мультимедиа</option>
             </select>
-            
+
             <label>Приоритет:</label>
             <select id="priority">
                 <option value="balanced">Сбалансированная сборка</option>
@@ -34,7 +68,7 @@
                 <option value="storage">Память и накопители</option>
             </select>
         </div>
-        
+
         <button id="generate-btn" class="generate-button">Подобрать сборку</button>
     </div>
 

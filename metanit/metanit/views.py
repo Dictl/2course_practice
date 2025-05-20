@@ -1,7 +1,6 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Component, ComponentCategory, Manufacturer, CPU, GPU, RAM, Motherboard, SSD, HDD, PSU, IncompatibleComponents, PCCase
 from .serializers import *
 
 class ComponentCategoryViewSet(viewsets.ModelViewSet):

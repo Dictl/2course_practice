@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="{% static 'hello/css/style.css' %}">
+    <style>
+        body {
+            background: #e6f0fa;
+        }
+        .auth-container {
+            max-width: 350px;
+            margin: 80px auto;
+            background: #0066cc;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 36px 32px 28px 32px;
+            color: #fff;
+            text-align: center;
+        }
+        .auth-container h2 {
+            margin-bottom: 24px;
+            font-weight: 700;
+        }
+        .auth-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .auth-container input {
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: none;
+            font-size: 16px;
+        }
+        .auth-container button {
+            background: #fff;
+            color: #0066cc;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 0;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .auth-container button:hover {
+            background: #e0eaff;
+        }
+        .auth-container .register-link {
+            margin-top: 18px;
+            color: #cce3ff;
+            font-size: 15px;
+        }
+        .auth-container .register-link a {
+            color: #fff;
+            text-decoration: underline;
+        }
+        .errorlist {
+            color: #ffd6d6;
+            margin-bottom: 10px;
+            list-style: none;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="auth-container">
+    <h2>Регистрация</h2>
+    <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+        {{ field.label_tag }}
+        {{ field.errors }}
+        {{ field }}
+    {% endfor %}
+    <button type="submit">Зарегистрироваться</button>
+</form>
+    <div class="register-link">
+        Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a>
+    </div>
+</div>
+</body>
+</html>
