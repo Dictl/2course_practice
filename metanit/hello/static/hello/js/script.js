@@ -19,7 +19,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const budget = budgetSlider.value;
         const purpose = document.getElementById('purpose').value;
         const priority = document.getElementById('priority').value;
-        
+
+        // Выводим значение purpose в консоль
+        console.log('purpose:', purpose);
+
         // Показываем загрузку
         resultsDiv.innerHTML = `
             <div class="loading">
@@ -31,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resultsDiv.style.display = 'block';
         
         // Запрос к API
-        fetch(`/api/builds?budget=${budget}&purpose=${purpose}&priority=${priority}`)
+        fetch(`/api/builds/?budget=${budget}&purpose=${purpose}&priority=${priority}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Ошибка сети');
