@@ -3,20 +3,32 @@ from rest_framework.decorators import action
 from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.db.models import Sum
+from django.db.models import Sum, Max
+from decimal import Decimal, InvalidOperation
+import sys
+
+sys.setrecursionlimit(10000)
 
 class BuildListAPIView(APIView):
     def get(self, request, *args, **kwargs):
         budget = request.GET.get('budget')
         purpose = request.GET.get('purpose')
+        print(purpose)
         priority = request.GET.get('priority')
+        print(priority)
 
-        print('purpose:', purpose)
-        print('priority:', priority)
+        print('>реквест разобран')
 
         # Валидация входных данных
         if not budget or not purpose or not priority:
             return Response({'error': 'Все параметры обязательны'}, status=status.HTTP_400_BAD_REQUEST)
+
+        print('>валидация успешна')
+
+        try:
+            budget = Decimal(budget)
+        except (InvalidOperation, TypeError):
+            return Response({'error': 'Бюджет должен быть числом'}, status=400)
 
         PURPOSE_MODEL_MAP = {
             'gaming': GamingPc,
@@ -25,12 +37,9 @@ class BuildListAPIView(APIView):
             'workstation': Workstation,
         }
 
-        purpose = request.GET.get('purpose')
         model = PURPOSE_MODEL_MAP.get(purpose.lower())
         if not model:
             return Response({'error': 'Некорректное значение purpose'}, status=400)
-
-        data = model.objects.all()
 
         PRIORITY_FIELD_MAP = {
             'balanced': 'balanced_coefficient',
@@ -39,30 +48,68 @@ class BuildListAPIView(APIView):
             'storage': 'ram_memory_priority_coefficient',
         }
 
-        priority_field = PRIORITY_FIELD_MAP.get(priority.lower())
-        if not priority_field:
-            return Response({'error': 'Некорректное значение priority'}, status=400)
+        priority_field = list(model.objects.values_list(PRIORITY_FIELD_MAP.get(priority.lower()), flat = True).order_by('category_id'))
+        categories = [float(value) for value in priority_field]
+        print(categories)
+        cats = [1,2,3,4,5,6,7,8,9]
+        sorted_pairs = sorted(zip(categories, cats), key=lambda x: x[0], reverse=True)
+        sorted_categories, cats = map(list, zip(*sorted_pairs))
+        print(sorted_categories)
+        print(cats)
 
-        total = model.objects.aggregate(sum=Sum(priority_field))['sum'] or 0
-        print(f'Сумма по полю {priority_field} для {purpose}:', total)
+        def generate_builds(max_builds=20):
+            print('>начинаю генерить билды')
+            builds = []
+            # Для каждой категории получаем компоненты, отсортированные по убыванию цены
+            category_components = []
+            for i in range(len(categories)):
+                print('>создаю списки компонентов, текущий i = ', i+1)
+                category_components.append(list(Component.objects.filter(
+                    category_id=i+1
+                ).order_by('-price')))
+            
+            # Рекурсивная функция для поиска сборок
+            def backtrack(current_build, remaining_budget, category_index, current_components):
+                if len(builds) >= max_builds:
+                    return
 
-        # budget и total должны быть числами
-        part_budget = float(budget) / float(total) if total else 0
-        print(f'Часть бюджета на 1 коэффициент: {part_budget}')
-
-        component_budgets = []
-        for obj in data:
-            coef = float(getattr(obj, priority_field, 0) or 0)
-            component_budget = float(part_budget) * coef
-            print(f'Компонент: {str(obj)}, бюджет: {component_budget}')
-            component_budgets.append({
-                'id': obj.pk,
-                'name': str(obj),
-                'coefficient': coef,
-                'component_budget': component_budget,
-            })
-
-        import itertools
+                if category_index >= len(categories)-1:
+                    # Все категории обработаны - сборка готова
+                    total_price = sum(c.price for c in current_build)
+                    builds.append({
+                        'id': len(builds) + 1,
+                        'name': f'Сборка #{len(builds) + 1}',
+                        'totalPrice': total_price,
+                        'components': [
+                            {
+                                'name': str(comp),
+                                'price': comp.price,
+                                'category': next((name for id, name in category_ids if id == comp.category_id), '')
+                            }
+                            for comp in current_build
+                        ]
+                    })
+                    return
+                
+                components = category_components[cats[category_index]-1]
+                
+                # Пытаемся выбрать самый дорогой вариант, который вписывается в бюджет
+                for comp in components:
+                    if comp.price <= remaining_budget:
+                        # Выбираем этот компонент и переходим к следующей категории
+                        backtrack(
+                            current_build + [comp],
+                            remaining_budget - comp.price,
+                            category_index + 1,
+                            current_components
+                        )
+                else:
+                    # Не нашли подходящий компонент - возвращаемся к предыдущей категории
+                    return
+            
+            # Начинаем поиск с пустой сборки и полного бюджета
+            backtrack([], budget, 0, category_components)
+            return builds
 
         category_ids = [
             (1, "Процессоры"),
@@ -70,35 +117,15 @@ class BuildListAPIView(APIView):
             (3, "Материнские платы"),
             (4, "Оперативная память"),
             (5, "Накопители SSD"),
-            # (6, "Жесткие диски"),  # Исключено
             (7, "Блоки питания"),
             (8, "Корпуса"),
             (9, "Системы охлаждения"),
         ]
 
-        components_by_category = []
-        for cat_id, cat_name in category_ids:
-            info = next((c for c in component_budgets if c['id'] == cat_id), None)
-            if not info:
-                return Response({'error': f'Нет бюджета для категории {cat_name}'}, status=400)
-            comps = list(Component.objects.filter(category_id=cat_id, price__lte=info['component_budget']))
-            if not comps:
-                return Response({'error': f'Нет подходящих компонентов для категории {cat_name}'}, status=400)
-            components_by_category.append(comps)
-
-        builds = []
-        for idx, combination in enumerate(itertools.islice(itertools.product(*components_by_category), 20), 1):
-            total_price = sum(comp.price for comp in combination)
-            builds.append({
-                'id': idx,
-                'name': f'Сборка #{idx}',
-                'totalPrice': total_price,
-                'components': [
-                    {'name': str(comp), 'price': comp.price, 'category': cat_name}
-                    for comp, (_, cat_name) in zip(combination, category_ids)
-                ]
-            })
-
+        builds = generate_builds()
+        print(builds)
+        if not builds:
+            return Response({'error': 'Не удалось собрать конфигурацию в заданный бюджет'}, status=400)
         return Response(builds, status=status.HTTP_200_OK)
 
 class ComponentCategoryViewSet(viewsets.ModelViewSet):
@@ -214,3 +241,4 @@ class IncompatibleComponentsViewSet(viewsets.ModelViewSet):
 class PCCaseViewSet(viewsets.ModelViewSet):
     queryset = PCCase.objects.all()
     serializer_class = PCCaseSerializer
+    
