@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Отображение результатов
     function displayBuilds(builds) {
-        if (!builds || builds.length === 0) {
+        if (!builds || builds.length === 0 || builds === 'None' || builds === null) {
             resultsDiv.innerHTML = `
                 <div class="no-results">
                     <h2>Не найдено подходящих сборок</h2>
@@ -65,30 +65,30 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             return;
         }
-        
+
         let html = '<h2>Подходящие сборки</h2>';
-        
+
         builds.forEach(build => {
             html += `
                 <div class="build-card">
                     <h3>${build.name} - ${formatNumber(build.totalPrice)} руб</h3>
                     <ul>
-                        ${build.components.map(comp => 
-                            `<li>${comp.name} - ${formatNumber(comp.price)} руб</li>`
+                        ${build.components.map(comp =>
+                            `<li>${comp.category} - ${comp.name}(${comp.country_of_origin}) - ${formatNumber(comp.price)} руб</li>`
                         ).join('')}
                     </ul>
                     <button class="select-build" data-id="${build.id}">Выбрать эту сборку</button>
                 </div>
             `;
         });
-        
+
         resultsDiv.innerHTML = html;
-        
+
         // Добавляем обработчики для кнопок выбора
         document.querySelectorAll('.select-build').forEach(button => {
             button.addEventListener('click', function() {
                 const buildId = this.getAttribute('data-id');
-                alert(`Выбрана сборка #${buildId}. В реальном приложении здесь будет переход к оформлению.`);
+                window.location.href = `/build/${buildId}/`;
             });
         });
     }

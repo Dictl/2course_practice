@@ -5,7 +5,7 @@ from .views import (
     ComponentCategoryViewSet, ManufacturerViewSet, ComponentViewSet,
     CPUViewSet, GPUViewSet, RAMViewSet, MotherboardViewSet, SSDViewSet,
     HDDViewSet, PSUViewSet, IncompatibleComponentsViewSet, PCCaseViewSet,
-    BuildListAPIView
+    BuildListAPIView, build_detail_view
 )
 
 router = DefaultRouter()
@@ -30,4 +30,6 @@ urlpatterns = [
     path('api/builds/', BuildListAPIView.as_view()),  # со слэшем
 
     path('api/', include(router.urls)),
+    path('build/<int:build_id>/', build_detail_view, name='build_detail'),
+
 ]

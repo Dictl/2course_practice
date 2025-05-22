@@ -102,29 +102,53 @@ class Component(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     release_date = models.DateField(blank=True, null=True)
     warranty_months = models.IntegerField(blank=True, null=True)
+    country_of_origin = models.CharField(max_length=100, blank=True, null=True)
+    link_to_store = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.model
 
     class Meta:
         db_table = 'component'
         app_label = 'metanit'
         managed = False
 
+
 class CPU(models.Model):
-    component = models.OneToOneField(Component, on_delete=models.CASCADE, primary_key=True)
+    component = models.OneToOneField('Component', on_delete=models.CASCADE, primary_key=True, db_column='component_id')
     cores = models.IntegerField()
     threads = models.IntegerField()
-    clock_speed = models.DecimalField(max_digits=5, decimal_places=2)
+    base_clock_speed = models.FloatField()
     socket = models.CharField(max_length=20)
+    max_clock_speed = models.FloatField()
+    core_name = models.CharField(max_length=50)
+    ram_type = models.CharField(max_length=20)
+    max_ram_vol = models.IntegerField()
+    tdp = models.IntegerField()
+    max_temperature = models.IntegerField()
+    integrated_pci_e_controller = models.CharField(max_length=20)
+    pci_e_lanes_amount = models.IntegerField()
+    integrated_graphics = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         db_table = 'cpu'
         app_label = 'metanit'
         managed = False
 
+
 class GPU(models.Model):
-    component = models.OneToOneField(Component, on_delete=models.CASCADE, primary_key=True)
+    component = models.OneToOneField(Component, on_delete=models.CASCADE, primary_key=True, db_column='component_id')
     vram = models.IntegerField()
     memory_type = models.CharField(max_length=20)
-    power_consumption = models.IntegerField()
+    power_consumption = models.IntegerField(blank=True, null=True)
+    max_monitors = models.IntegerField()
+    hdmi_ver = models.CharField(max_length=10)
+    max_res = models.CharField(max_length=30)
+    pci_e_lines_amount = models.IntegerField()
+    amount_of_exp_slots = models.IntegerField()
+    dimensions = models.CharField(max_length=30)
+    interface = models.CharField(max_length=20)
+    interface_form_factor = models.CharField(max_length=20)
 
     class Meta:
         db_table = 'gpu'
@@ -146,15 +170,17 @@ class HDD(models.Model):
         app_label = 'metanit'
         managed = False
 
+
 class SSD(models.Model):
     component = models.OneToOneField(Component, on_delete=models.CASCADE, primary_key=True)
     capacity = models.IntegerField()
     ssd_type = models.CharField(max_length=20)
-    form_factor = models.CharField(max_length=10)
-    speed = models.IntegerField()
+    form_factor = models.CharField(max_length=20)
     tbw = models.IntegerField()
-    controller = models.CharField(max_length=20)
     memory = models.CharField(max_length=20)
+    max_seq_read_speed = models.IntegerField(blank=True, null=True)
+    max_seq_write_speed = models.IntegerField(blank=True, null=True)
+    controller = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         db_table = 'ssd'
@@ -163,34 +189,51 @@ class SSD(models.Model):
 
 class RAM(models.Model):
     component = models.OneToOneField(Component, on_delete=models.CASCADE, primary_key=True)
-    capacity = models.IntegerField()
-    speed = models.IntegerField()
-    latency = models.IntegerField(blank=True, null=True)
+    latency = models.IntegerField()
+    amount_of_plates = models.IntegerField()
+    volume_of_each = models.IntegerField()
+    memory_type = models.CharField(max_length=20)
+    cl = models.IntegerField()
+    trp = models.IntegerField()
+    trcd = models.IntegerField(blank=True, null=True)
+    tras = models.IntegerField(blank=True, null=True)
 
     class Meta:
         db_table = 'ram'
         app_label = 'metanit'
         managed = False
 
+
+
 class Motherboard(models.Model):
-    component = models.OneToOneField(Component, on_delete=models.CASCADE, primary_key=True)
+    component = models.OneToOneField('Component', on_delete=models.CASCADE, primary_key=True, db_column='component_id')
     cpu_socket = models.CharField(max_length=20)
-    chipset = models.CharField(max_length=20)
-    ram_socket = models.CharField(max_length=20)
-    expansion_slots = models.CharField(max_length=50)
-    interface = models.CharField(max_length=50)
+    chipset = models.CharField(max_length=30)
+    ram_slots = models.IntegerField()
+    ram_type = models.CharField(max_length=10)
+    pci_e_ver_exp = models.CharField(max_length=10, blank=True, null=True)
+    nvme_support = models.BooleanField()
+    m_2_slots = models.IntegerField()
+    sata_slots = models.IntegerField()
+    dimensions = models.CharField(max_length=20)
+    m_2_pci_e_cpu_line = models.CharField(max_length=100)
+    m_2_pci_e_chipset_line = models.CharField(max_length=100)
+    form_factor = models.CharField(max_length=20)
+    supported_cores = models.CharField(max_length=100)
 
     class Meta:
         db_table = 'motherboard'
         app_label = 'metanit'
         managed = False
 
+
 class PSU(models.Model):
     component = models.OneToOneField(Component, on_delete=models.CASCADE, primary_key=True)
     psu_power = models.IntegerField()
-    certification = models.CharField(max_length=10)
+    certification = models.CharField(max_length=20)
     modularity = models.BooleanField(blank=True, null=True)
-    protection = models.CharField(max_length=20)
+    protection = models.CharField(max_length=50)
+    form_factor = models.CharField(max_length=20)
 
     class Meta:
         db_table = 'psu'
@@ -286,7 +329,7 @@ class PCCase(models.Model):
         managed = False
 
 
-class Colingsystem(models.Model):
+class CoolingSystem(models.Model):
     component = models.OneToOneField('Component', on_delete=models.CASCADE, primary_key=True)
     tdp = models.IntegerField()
     fan_amount = models.IntegerField()
@@ -303,7 +346,8 @@ class Colingsystem(models.Model):
     rated_voltage = models.FloatField()
 
     class Meta:
-        db_table = 'colingsystem'
+        managed = False
+        db_table = 'coolingsystem'
         app_label = 'metanit'
 
 
