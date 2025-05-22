@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>Удалить аккаунт</title>
+    <link rel="stylesheet" href="{% static 'hello/css/style.css' %}">
+    <style>
+        body {
+            background: #fff url("data:image/svg+xml;utf8,<svg width='40' height='40' xmlns='http://www.w3.org/2000/svg'><text x='0' y='30' font-size='30'>👻</text></svg>") repeat;
+        }
+        .profile-edit-container {
+            max-width: 400px;
+            margin: 80px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 36px 32px 28px 32px;
+            color: #0066cc;
+            text-align: center;
+        }
+        .profile-edit-container h2 {
+            color: #0066cc;
+            margin-bottom: 24px;
+        }
+        .profile-edit-container button {
+            background: #ffd6d6;
+            color: #b30000;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 0;
+            width: 100%;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .profile-edit-container button:hover {
+            background: #ffb3b3;
+        }
+        .profile-edit-container a.cancel {
+            color: #fff;
+            background: #0066cc;
+            border-radius: 6px;
+            padding: 10px 0;
+            margin-top: 18px;
+            display: block;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="profile-edit-container">
+    <h2>Вы уверены, что хотите удалить аккаунт?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Да, удалить аккаунт</button>
+    </form>
+    <a href="{% url 'profile_edit' %}" class="cancel">Отмена</a>
+</div>
+</body>
+</html>

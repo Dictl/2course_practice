@@ -10,9 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+LOGIN_URL = '/'
 LANGUAGE_CODE = 'ru-ru'
 TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
+
 
 import os
 from pathlib import Path
@@ -44,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'hello',
+    'metanit',
 ]
 
 MIDDLEWARE = [
@@ -82,10 +85,10 @@ WSGI_APPLICATION = 'metanit.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'etu_practice',
-        'USER': 'postgres',
-        'PASSWORD': 'leti',
-        'HOST': 'localhost',
+        'NAME': 'sborka',
+        'USER': 'fuser',
+        'PASSWORD': 'fpassword',
+        'HOST': '91.103.140.63',
         'PORT': '5432'
     }
 }
@@ -113,9 +116,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+#LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+#TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -125,7 +128,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
+#STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -134,5 +137,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'hello/static')]  # Путь к вашим CSS/JS
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'hello/static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+APPEND_SLASH = False
 
