@@ -12,17 +12,11 @@ class BuildListAPIView(APIView):
     def get(self, request, *args, **kwargs):
         budget = request.GET.get('budget')
         purpose = request.GET.get('purpose')
-        print(purpose)
         priority = request.GET.get('priority')
-        print(priority)
-
-        print('>реквест разобран')
 
         # Валидация входных данных
         if not budget or not purpose or not priority:
             return Response({'error': 'Все параметры обязательны'}, status=status.HTTP_400_BAD_REQUEST)
-
-        print('>валидация успешна')
 
         try:
             budget = Decimal(budget)
@@ -49,25 +43,19 @@ class BuildListAPIView(APIView):
 
         priority_field = list(model.objects.values_list(PRIORITY_FIELD_MAP.get(priority.lower()), flat = True).order_by('category_id'))
         categories = [float(value) for value in priority_field]
-        print(categories)
         cats = [1,2,3,4,5,6,7,8,9]
         sorted_pairs = sorted(zip(categories, cats), key=lambda x: x[0], reverse=True)
         sorted_categories, cats = map(list, zip(*sorted_pairs))
-        print(sorted_categories)
-        print(cats)
 
         def generate_builds(max_builds=20):
-            print('>начинаю генерить билды')
             builds = []
             # Для каждой категории получаем компоненты, отсортированные по убыванию цены
             category_components = []
             for i in range(len(categories)):
-                print('>создаю списки компонентов, текущий i = ', i+1)
                 category_components.append(list(Component.objects.filter(
                     category_id=i+1
                 ).order_by('-price')))
 
-            # Рекурсивная функция для поиска сборок
             # Рекурсивная функция для поиска сборок
             def backtrack(current_build, remaining_budget, category_index, current_components):
                 if len(builds) >= max_builds:
@@ -95,10 +83,82 @@ class BuildListAPIView(APIView):
 
                 components = category_components[cats[category_index] - 1]
 
-                # Пытаемся выбрать самый дорогой вариант, который вписывается в бюджет
+                # Пытаемся выбрать самый дорогой вариант, который вписывается в бюджет (святые проверки!)
                 for comp in components:
-                    if comp.price <= remaining_budget:
-                        # Выбираем этот компонент и переходим к следующей категории
+
+                    if comp.price <= remaining_budget and comp.price <= budget * Decimal(0.65):
+
+                        #Проверки для процессора
+                        if (cats[category_index] == 1) and category_index > 0:
+                            for i in range(category_index+1):
+
+                                #Процессор к материнской плате (сокет+типы памяти)
+                                if cats[i] == 3:
+                                    if not (Motherboard.objects.get(component_id=current_build[i].id).cpu_socket == CPU.objects.get(component_id=comp.id).socket and \
+                                        Motherboard.objects.get(component_id=current_build[i].id).ram_type in CPU.objects.get(component_id=comp.id).ram_type.split(", ")):
+                                        return
+
+                                #Процессор к памяти (типы памяти)
+                                if cats[i] == 4:
+                                    if not (RAM.objects.get(component_id=current_build[i].id).memory_type in CPU.objects.get(component_id=comp.id).ram_type.split(", ")):
+                                        return
+
+                        #Проверки для материнской платы             
+                        if (cats[category_index] == 3) and category_index > 0:
+                            for i in range(category_index+1):
+
+                                #Материнская плата к процессору (сокет+типы памяти)
+                                if cats[i] == 1:
+                                    if not (Motherboard.objects.get(component_id=comp.id).cpu_socket == CPU.objects.get(component_id=current_build[i].id).socket and \
+                                        Motherboard.objects.get(component_id=comp.id).ram_type in CPU.objects.get(component_id=current_build[i].id).ram_type.split(", ")):
+                                        return
+
+                                #Материнская плата к памяти (типы памяти)
+                                if cats[i] == 4:
+                                    if not (Motherboard.objects.get(component_id=comp.id).ram_type == RAM.objects.get(component_id=current_build[i].id).memory_type):
+                                        return
+                                    
+                                #Материнская плата к корпусу (форм-фактор)
+                                if cats[i] == 8:
+                                    print(Motherboard.objects.get(component_id=comp.id).form_factor, " ", PCCase.objects.get(component_id=current_build[i].id).max_form_factor)
+                                    if not (Motherboard.objects.get(component_id=comp.id).form_factor == PCCase.objects.get(component_id=current_build[i].id).max_form_factor):
+                                        return
+                                    
+                        #Проверки для памяти
+                        if (cats[category_index] == 4) and category_index > 0:
+                            for i in range(category_index+1):
+
+                                #Память к процессору (типы памяти)
+                                if cats[i] == 1:
+                                    if not (RAM.objects.get(component_id=comp.id).memory_type in CPU.objects.get(component_id=current_build[i].id).ram_type.split(", ")):
+                                        return
+                                    
+                                #Память к материнской плате (типы памяти)
+                                if cats[i] == 3:
+                                    if not (Motherboard.objects.get(component_id=current_build[i].id).ram_type == RAM.objects.get(component_id=comp.id).memory_type):
+                                        return
+                                    
+                        #Проверки для видеокарты 
+                        if (cats[category_index] == 2) and category_index > 0:
+                            for i in range(category_index+1):
+                                #Видеокарта к корпусу (длина видеокарты)
+                                if cats[i] == 8:
+                                    if not (int(GPU.objects.get(component_id=comp.id).dimensions.split("x")[0]) <= PCCase.objects.get(component_id=current_build[i].id).max_gpu_length):
+                                        return
+                        
+                        #Проверки для корпуса
+                        if (cats[category_index] == 8) and category_index > 0:
+                            for i in range(category_index+1):
+                                #Корпус к видеокарте (длина видеокарты)
+                                if cats[i] == 2:
+                                    if not (int(GPU.objects.get(component_id=current_build[i].id).dimensions.split("x")[0]) <= PCCase.objects.get(component_id=comp.id).max_gpu_length):
+                                        return
+                                    
+                                #Корпус к материнской плате (форм-фактор)
+                                if cats[i] == 3:
+                                    if not (Motherboard.objects.get(component_id=current_build[i].id).form_factor in PCCase.objects.get(component_id=comp.id).max_form_factor.split(', ')):
+                                        return
+                                     
                         backtrack(
                             current_build + [comp],
                             remaining_budget - comp.price,
@@ -125,7 +185,6 @@ class BuildListAPIView(APIView):
         ]
 
         builds = generate_builds()
-        print(builds)
         if not builds:
             return Response({'error': 'Не удалось собрать конфигурацию в заданный бюджет'}, status=400)
         return Response(builds, status=status.HTTP_200_OK)
