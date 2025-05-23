@@ -3,7 +3,6 @@ from rest_framework.decorators import action
 from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.db.models import Sum, Max
 from decimal import Decimal, InvalidOperation
 import sys
 
@@ -67,13 +66,14 @@ class BuildListAPIView(APIView):
                 category_components.append(list(Component.objects.filter(
                     category_id=i+1
                 ).order_by('-price')))
-            
+
+            # Рекурсивная функция для поиска сборок
             # Рекурсивная функция для поиска сборок
             def backtrack(current_build, remaining_budget, category_index, current_components):
                 if len(builds) >= max_builds:
                     return
 
-                if category_index >= len(categories)-1:
+                if category_index >= len(categories) - 1:
                     # Все категории обработаны - сборка готова
                     total_price = sum(c.price for c in current_build)
                     builds.append({
@@ -82,17 +82,19 @@ class BuildListAPIView(APIView):
                         'totalPrice': total_price,
                         'components': [
                             {
-                                'name': str(comp),
+                                'name': f"{comp.manufacturer.name} {comp.model}",
                                 'price': comp.price,
-                                'category': next((name for id, name in category_ids if id == comp.category_id), '')
+                                'category': next((name for id, name in category_ids if id == comp.category_id), ''),
+                                'country': comp.country_of_origin,  # Используем поле country_of_origin
+                                'link': comp.link_to_store
                             }
                             for comp in current_build
                         ]
                     })
                     return
-                
-                components = category_components[cats[category_index]-1]
-                
+
+                components = category_components[cats[category_index] - 1]
+
                 # Пытаемся выбрать самый дорогой вариант, который вписывается в бюджет
                 for comp in components:
                     if comp.price <= remaining_budget:
@@ -106,7 +108,7 @@ class BuildListAPIView(APIView):
                 else:
                     # Не нашли подходящий компонент - возвращаемся к предыдущей категории
                     return
-            
+
             # Начинаем поиск с пустой сборки и полного бюджета
             backtrack([], budget, 0, category_components)
             return builds
@@ -131,7 +133,7 @@ class BuildListAPIView(APIView):
 class ComponentCategoryViewSet(viewsets.ModelViewSet):
     queryset = ComponentCategory.objects.all()
     serializer_class = ComponentCategorySerializer
-    
+
     @action(detail=False, methods=['post'])
     def bulk_create(self, request):
         serializer = ComponentCategoryBulkSerializer(data=request.data, many=True)
@@ -142,7 +144,7 @@ class ComponentCategoryViewSet(viewsets.ModelViewSet):
 class ManufacturerViewSet(viewsets.ModelViewSet):
     queryset = Manufacturer.objects.all()
     serializer_class = ManufacturerSerializer
-    
+
     @action(detail=False, methods=['post'])
     def bulk_create(self, request):
         serializer = ManufacturerBulkSerializer(data=request.data, many=True)
@@ -167,12 +169,12 @@ class ComponentViewSet(viewsets.ModelViewSet):
 class CPUViewSet(viewsets.ModelViewSet):
     queryset = CPU.objects.all()
     serializer_class = CPUSerializer
-    
+
     def perform_destroy(self, instance):
         with transaction.atomic():
-            component = instance.component 
-            instance.delete() 
-            component.delete() 
+            component = instance.component
+            instance.delete()
+            component.delete()
 
 class GPUViewSet(viewsets.ModelViewSet):
     queryset = GPU.objects.all()
@@ -180,9 +182,9 @@ class GPUViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         with transaction.atomic():
-            component = instance.component 
-            instance.delete() 
-            component.delete() 
+            component = instance.component
+            instance.delete()
+            component.delete()
 
 class RAMViewSet(viewsets.ModelViewSet):
     queryset = RAM.objects.all()
@@ -190,9 +192,9 @@ class RAMViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         with transaction.atomic():
-            component = instance.component 
-            instance.delete() 
-            component.delete() 
+            component = instance.component
+            instance.delete()
+            component.delete()
 
 class MotherboardViewSet(viewsets.ModelViewSet):
     queryset = Motherboard.objects.all()
@@ -200,9 +202,9 @@ class MotherboardViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         with transaction.atomic():
-            component = instance.component 
-            instance.delete() 
-            component.delete() 
+            component = instance.component
+            instance.delete()
+            component.delete()
 
 class SSDViewSet(viewsets.ModelViewSet):
     queryset = SSD.objects.all()
@@ -210,9 +212,9 @@ class SSDViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         with transaction.atomic():
-            component = instance.component 
-            instance.delete() 
-            component.delete() 
+            component = instance.component
+            instance.delete()
+            component.delete()
 
 class HDDViewSet(viewsets.ModelViewSet):
     queryset = HDD.objects.all()
@@ -220,9 +222,9 @@ class HDDViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         with transaction.atomic():
-            component = instance.component 
-            instance.delete() 
-            component.delete() 
+            component = instance.component
+            instance.delete()
+            component.delete()
 
 class PSUViewSet(viewsets.ModelViewSet):
     queryset = PSU.objects.all()
@@ -230,9 +232,9 @@ class PSUViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         with transaction.atomic():
-            component = instance.component 
-            instance.delete() 
-            component.delete() 
+            component = instance.component
+            instance.delete()
+            component.delete()
 
 class IncompatibleComponentsViewSet(viewsets.ModelViewSet):
     queryset = IncompatibleComponents.objects.all()
@@ -241,4 +243,3 @@ class IncompatibleComponentsViewSet(viewsets.ModelViewSet):
 class PCCaseViewSet(viewsets.ModelViewSet):
     queryset = PCCase.objects.all()
     serializer_class = PCCaseSerializer
-    

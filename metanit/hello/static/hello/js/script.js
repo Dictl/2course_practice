@@ -20,9 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const purpose = document.getElementById('purpose').value;
         const priority = document.getElementById('priority').value;
 
-        // Выводим значение purpose в консоль
-        console.log('purpose:', purpose);
-
         // Показываем загрузку
         resultsDiv.innerHTML = `
             <div class="loading">
@@ -56,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Отображение результатов
     function displayBuilds(builds) {
-        if (!builds || builds.length === 0) {
+        if (!builds || builds.length === 0 || builds === 'None' || builds === null) {
             resultsDiv.innerHTML = `
                 <div class="no-results">
                     <h2>Не найдено подходящих сборок</h2>
@@ -65,31 +62,47 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             return;
         }
-        
+
         let html = '<h2>Подходящие сборки</h2>';
-        
+
         builds.forEach(build => {
             html += `
                 <div class="build-card">
                     <h3>${build.name} - ${formatNumber(build.totalPrice)} руб</h3>
                     <ul>
-                        ${build.components.map(comp => 
-                            `<li>${comp.name} - ${formatNumber(comp.price)} руб</li>`
+                        ${build.components.map(comp =>
+                            `<li>${comp.category} - ${comp.name}(${comp.country}) - ${formatNumber(comp.price)} руб</li>`
                         ).join('')}
                     </ul>
                     <button class="select-build" data-id="${build.id}">Выбрать эту сборку</button>
+                    <div class="build-details" id="details-${build.id}" style="display: none;">
+                    ${build.components.map(comp =>
+                    `<li>${comp.category} - ${comp.name}(${comp.country}) - ${formatNumber(comp.price)} руб 
+                        <a href="${comp.link}" class="buy-button" target="_blank">Купить</a></li>`).join('')}
+                    <li>Итого: ${formatNumber(build.totalPrice)} руб.</li>
+                </div>
                 </div>
             `;
         });
-        
+
         resultsDiv.innerHTML = html;
-        
+
         // Добавляем обработчики для кнопок выбора
         document.querySelectorAll('.select-build').forEach(button => {
             button.addEventListener('click', function() {
                 const buildId = this.getAttribute('data-id');
-                alert(`Выбрана сборка #${buildId}. В реальном приложении здесь будет переход к оформлению.`);
+                const detailsDiv = document.getElementById(`details-${buildId}`);
+                
+                // Если информация уже отображена, скрываем её
+                if (detailsDiv.style.display === 'block') {
+                    detailsDiv.style.display = 'none';
+                } else {
+                    detailsDiv.style.display = 'block';
+                }
+
+
             });
         });
     }
 });
+

@@ -30,4 +30,6 @@ urlpatterns = [
     path('api/builds/', BuildListAPIView.as_view()),  # со слэшем
 
     path('api/', include(router.urls)),
+
 ]
+
