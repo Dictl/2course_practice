@@ -3,17 +3,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const budgetValue = document.getElementById('budget-value');
     const generateBtn = document.getElementById('generate-btn');
     const resultsDiv = document.getElementById('results');
-    
+
     // Форматирование числа с пробелами
     function formatNumber(num) {
         return new Intl.NumberFormat('ru-RU').format(num);
     }
-    
+
     // Обновление отображаемого значения бюджета
     budgetSlider.addEventListener('input', function() {
         budgetValue.textContent = formatNumber(this.value) + ' руб';
     });
-    
+
     // Обработка нажатия кнопки
     generateBtn.addEventListener('click', function() {
         const budget = budgetSlider.value;
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         resultsDiv.style.display = 'block';
-        
+
         // Запрос к API
         fetch(`/api/builds/?budget=${budget}&purpose=${purpose}&priority=${priority}`)
             .then(response => {
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             });
     });
-    
+
     // Отображение результатов
     function displayBuilds(builds) {
         if (!builds || builds.length === 0 || builds === 'None' || builds === null) {
@@ -71,16 +71,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3>${build.name} - ${formatNumber(build.totalPrice)} руб</h3>
                     <ul>
                         ${build.components.map(comp =>
-                            `<li>${comp.category} - ${comp.name}(${comp.country}) - ${formatNumber(comp.price)} руб</li>`
+                            `<li>${comp.category} - ${comp.name}(${comp.country}) - ${formatNumber(comp.price)} руб 
+                                <a href="${comp.link}" class="buy-button" target="_blank">Купить</a></li>`
                         ).join('')}
                     </ul>
-                    <button class="select-build" data-id="${build.id}">Выбрать эту сборку</button>
-                    <div class="build-details" id="details-${build.id}" style="display: none;">
-                    ${build.components.map(comp =>
-                    `<li>${comp.category} - ${comp.name}(${comp.country}) - ${formatNumber(comp.price)} руб 
-                        <a href="${comp.link}" class="buy-button" target="_blank">Купить</a></li>`).join('')}
-                    <li>Итого: ${formatNumber(build.totalPrice)} руб.</li>
-                </div>
                 </div>
             `;
         });
@@ -92,17 +86,14 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener('click', function() {
                 const buildId = this.getAttribute('data-id');
                 const detailsDiv = document.getElementById(`details-${buildId}`);
-                
+
                 // Если информация уже отображена, скрываем её
                 if (detailsDiv.style.display === 'block') {
                     detailsDiv.style.display = 'none';
                 } else {
                     detailsDiv.style.display = 'block';
                 }
-
-
             });
         });
     }
 });
-
