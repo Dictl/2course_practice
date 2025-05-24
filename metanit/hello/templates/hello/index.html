@@ -54,18 +54,18 @@
         <div class="filters">
             <label>Основное назначение:</label>
             <select id="purpose">
-                <option value="office">Офисный ПК</option>
-                <option value="gaming" selected>Игровой ПК</option>
-                <option value="workstation">Рабочая станция</option>
-                <option value="home">Домашний мультимедиа</option>
+                <option value="office" {% if user_preferences.purpose == 'office' %}selected{% endif %}>Офисный ПК</option>
+                <option value="gaming" {% if user_preferences.purpose == 'gaming' %}selected{% endif %}>Игровой ПК</option>
+                <option value="workstation" {% if user_preferences.purpose == 'workstation' %}selected{% endif %}>Рабочая станция</option>
+                <option value="home" {% if user_preferences.purpose == 'home' %}selected{% endif %}>Домашний мультимедиа</option>
             </select>
 
             <label>Приоритет:</label>
             <select id="priority">
-                <option value="balanced">Сбалансированная сборка</option>
-                <option value="cpu">Процессор</option>
-                <option value="gpu" selected>Видеокарта</option>
-                <option value="storage">Память и накопители</option>
+                <option value="balanced" {% if user_preferences.priority == 'balanced' %}selected{% endif %}>Балансированная сборка</option>
+                <option value="cpu" {% if user_preferences.priority == 'cpu' %}selected{% endif %}>Процессор</option>
+                <option value="gpu" {% if user_preferences.priority == 'gpu' %}selected{% endif %}>Видеокарта</option>
+                <option value="storage" {% if user_preferences.priority == 'storage' %}selected{% endif %}>Память и накопители</option>
             </select>
         </div>
 

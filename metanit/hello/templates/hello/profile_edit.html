@@ -39,6 +39,36 @@
     <div class="profile-email">
         Ваш e-mail: {{ user.email }}
     </div>
+    <!-- Добавляем после блока с email и перед основной формой -->
+<div class="preferences-section">
+    <h3>Предпочтения пользователя</h3>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="purpose">Назначение ПК:</label>
+            <select id="purpose" name="purpose" class="form-control">
+                <option value="gaming" {% if user_preferences.purpose == 'gaming' %}selected{% endif %}>Игровой</option>
+                <option value="office" {% if user_preferences.purpose == 'office' %}selected{% endif %}>Офисный</option>
+                <option value="workstation" {% if user_preferences.purpose == 'workstation' %}selected{% endif %}>Рабочая станция</option>
+                <option value="home" {% if user_preferences.purpose == 'home' %}selected{% endif %}>Домашний мультимедиа</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="priority">Приоритет:</label>
+            <select id="priority" name="priority" class="form-control">
+                <option value="balanced" {% if user_preferences.priority == 'balanced' %}selected{% endif %}>Балансированная сборка</option>
+                <option value="cpu" {% if user_preferences.priority == 'cpu' %}selected{% endif %}>Процессор</option>
+                <option value="gpu" {% if user_preferences.priority == 'gpu' %}selected{% endif %}>Видеокарта</option>
+                <option value="storage" {% if user_preferences.priority == 'storage' %}selected{% endif %}>Память и накопители</option>
+            </select>
+        </div>
+        
+        <button type="submit" name="save_preferences" class="btn btn-primary">
+            Сохранить предпочтения
+        </button>
+    </form>
+</div>
     {% if messages %}
       {% for message in messages %}
         <div style="color: #ffd6d6;">{{ message }}</div>
